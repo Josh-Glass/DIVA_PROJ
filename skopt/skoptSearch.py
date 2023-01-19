@@ -10,23 +10,23 @@ tested_model = 'diva_shj'
 
 space = {
     "learn_rate": {
-        "range": [1.9, 2.9],
+        "range": [0.5, 3.0],
         "type": "Real"
     },
     "num_hidden_nodes": {
-        "range": [8, 12],
+        "range": [2, 15],
         "type": "Integer"
     },
     "weight_range": {
-        "range": [1.5, 2.5],
+        "range": [.5, 3.0],
         "type": "Real"
     },
     "beta": {
-        "range": [400.0, 500.0],
+        "range": [0.0, 500.0],
         "type": "Integer"
     },
     "c": {
-        "range": [400.0, 500.0],
+        "range": [0.0, 500.0],
         "type": "Integer"
     },
     
@@ -37,7 +37,7 @@ space = {
 print('Search Started')
 
 objective_func = divaWrap_RespProbMethod_nosofskySuggestion.get_fit
-best_params = simutils.skopt_search(objective_func=objective_func, space=space, iters= 1500, inits=1500, plot_results=False)
+best_params = simutils.skopt_search(objective_func=objective_func, space=space, iters= 1, inits=1, plot_results=False)
 
 
 print('Search Complete!')

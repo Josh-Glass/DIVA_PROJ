@@ -18,6 +18,9 @@ def split_data(dataset_id):
 
 
 def random_search(objective_func, space, iters = 1, population_size = 1, print_iter_score = False):
+    import itertools
+    import random
+    import multiprocessing as mp
 
     best_score = 1
     best_params = None
@@ -52,7 +55,9 @@ def random_search(objective_func, space, iters = 1, population_size = 1, print_i
 
 
 
-def grid_search(objective_func, space, population_size = 10):
+#def grid_search(objective_func, space, population_size = 10):
+def grid_search(space, population_size = 10):
+
     import itertools
 
     best_score = 1
@@ -74,7 +79,9 @@ def grid_search(objective_func, space, population_size = 10):
             )
     param_space = list(itertools.product(*param_space))
 
-    for m in range(population_size):
+
+
+    '''for m in range(population_size):
         member_params = {
             param: param_space[m][p]
             for p, param in enumerate(space)
@@ -84,10 +91,11 @@ def grid_search(objective_func, space, population_size = 10):
 
         if model_error < best_score:
             best_score = model_error
-            best_params = member_params   
+            best_params = member_params'''
 
-    return best_params
+               
 
+    return param_space
 
 
 
@@ -97,7 +105,9 @@ def skopt_search(objective_func, space, run = 1, iters = 1, inits = 1, plot_resu
     from skopt.space import Real, Integer
     from skopt.utils import use_named_args
     from skopt import gp_minimize
-    from search import tested_model
+    import sys, os
+    sys.path.append(os.path.join(sys.path[0],'skopt'))
+    from skopt import skoptSearch as sks
 
 
 
@@ -144,12 +154,12 @@ def skopt_search(objective_func, space, run = 1, iters = 1, inits = 1, plot_resu
         import matplotlib.pyplot as plt
         from skopt.plots import plot_convergence
         plot_convergence(res_gp)
-        plt.savefig(f'results_skopt_fig--{tested_model}--{timestr}.png')
+        plt.savefig(f'results_skopt_fig--{sks.tested_model}--{timestr}.png')
 
     
     df = pd.DataFrame({'error': res_gp.func_vals,
     '[learn_rate, num_hidden_nodes, weight_range, beta]': res_gp.x_iters,
     })
-    df.to_csv(f'logs/skopt-{tested_model}-{timestr}.csv')
+    df.to_csv(f'logs/skopt-{sks.tested_model}-{timestr}.csv')
    
     return (res_gp.fun, '|', {hp: val for hp, val in zip(space, res_gp.x)})
