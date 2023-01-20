@@ -1,5 +1,23 @@
 ## external requirements
 import numpy as np
+import pandas as pd
+import time
+
+
+df_hp = pd.read_csv(r'orthTune.csv')
+
+
+hidden_nodes = df_hp.iloc[0:27, 0]
+
+hidden_nodes = hidden_nodes.astype(int)
+lr = df_hp.iloc[0:27, 1]
+#lr = df_hp['lr']
+weight_range = df_hp.iloc[0:27, 2]
+#weight_range = df_hp['wr']
+weight_range = weight_range.astype(int)
+beta = df_hp.iloc[0:27, 3]
+#beta = df_hp['beta']
+beta = beta.astype(int)
 
 
 
@@ -37,6 +55,7 @@ data = {
 
 
 behavioral_all_structures = 1 - np.genfromtxt('data/shj/behavioral_nosofsky1994.csv', delimiter = ',')
+behavioral = behavioral_all_structures[0:16,0]
 
 
 
@@ -45,7 +64,7 @@ behavioral_all_structures = 1 - np.genfromtxt('data/shj/behavioral_nosofsky1994.
 
 
 
-def get_fit(learn_rate, num_hidden_nodes, weight_range, beta, c):
+def get_fit(learn_rate, num_hidden_nodes, weight_range, beta):
     # # # # # # # # # # 
     # 
     # SETUP
@@ -53,7 +72,7 @@ def get_fit(learn_rate, num_hidden_nodes, weight_range, beta, c):
     # # # # # # # # # #
     fit_err = 0
     num_epochs = 16
-    inits= 1
+    inits= 1000
 
 
 
@@ -159,7 +178,7 @@ def get_fit(learn_rate, num_hidden_nodes, weight_range, beta, c):
 
 
     ## luce choice w/ late-stage attention
-    def response(params, inputs, channels, targets = None, beta = beta, c=c):
+    def response(params, inputs, channels, targets = None, beta = beta):
         if np.any(targets) == None: targets = inputs
 
         activations = np.array([
@@ -190,15 +209,7 @@ def get_fit(learn_rate, num_hidden_nodes, weight_range, beta, c):
             axis = 2, keepdims = True
         )
 
-        #this is the response rule that nosofsky suggested
-        #as c gets larger the output is more "confident" that the channel with the lower sse is more likely
-        #as c gets smaller the output is less "confident" that the channel with the lower sse is more likely
-        probs= (np.exp(-c*channel_errors)) / np.sum(np.exp(-c*channel_errors), axis = 0, keepdims = True)
-
-        return probs # this is the normal response rule<--(1 / channel_errors) / np.sum(1 / channel_errors, axis = 0, keepdims = True)
-
-
-
+        return (1 / channel_errors) / np.sum(1 / channel_errors, axis = 0, keepdims = True)
 
     ## build parameter dictionary
     def build_params(num_features, num_hidden_nodes, categories, weight_range_low, weight_range_high ): # <-- he et al (2015) initialization
@@ -280,7 +291,7 @@ def get_fit(learn_rate, num_hidden_nodes, weight_range, beta, c):
     #initalize fit errors list outside of the loop so that it DOES NOT reset after going through each shj type
     fit_errors = []
     for s, structure in enumerate(data):
-        
+
         struct = data[structure]
         idx1 = np.arange(struct.shape[0])
         idx2 = np.arange(struct.shape[0])
@@ -354,6 +365,7 @@ def get_fit(learn_rate, num_hidden_nodes, weight_range, beta, c):
 
                     ## Step 1: Record Model Response
                     resp = response(params= params, inputs = inputs[p,:], channels = categories, targets = targets[p,:], beta = beta)
+                    
                     #check to see if the 'winning' resp prob is the correct one
                     if np.argmax(resp, axis=0) == labels[p]:
                         #in the case that the correct item has the highest, take the value of that prob
@@ -377,7 +389,6 @@ def get_fit(learn_rate, num_hidden_nodes, weight_range, beta, c):
         
         #take the average across all inits per epoch<--left with array of size 16X1
         accuracy = performance_data.mean(axis = 1).reshape(16, 1)
-
         
 
         
@@ -389,6 +400,20 @@ def get_fit(learn_rate, num_hidden_nodes, weight_range, beta, c):
     return fit_err
 
 
+print('started:')
+print(time.strftime("%m%d-%H%M"))
 
 
+evaluations = []
 
+for i in lr.index:
+    val =get_fit(learn_rate=lr[i], num_hidden_nodes=hidden_nodes[i], weight_range=weight_range[i], beta=beta[i])
+    
+    evaluations.append(val)
+
+df_evaluations = pd.DataFrame({'error_val': evaluations})
+savetime = time.strftime("%m%d-%H%M")
+df_evaluations.to_csv(f'orthoganalArray_Rseults_RespProbMethod-{savetime}.csv')
+
+print('ended:')
+print(time.strftime("%m%d-%H%M"))

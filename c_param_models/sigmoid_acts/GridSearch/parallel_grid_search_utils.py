@@ -1,15 +1,15 @@
 import csv 
 import numpy as np
 import itertools
-import sys
-sys.path.append('../models')
+import sys, os
+import pandas as pd
+sys.path.append(os.path.join(sys.path[0],'..'))
 
-from models import divaWrap_RespProbMethod_nosofskySuggestion  
-
-print(sys.path)
+import divaWrap_RespProbMethod_nosofskySuggestion  
 
 
-exit()
+
+
 def grid_search(space, population_size = 10):
 
 
@@ -41,8 +41,8 @@ def run_parallel_grid_search(core_id, hyperparameter_batch):
     results_column_names = ['learn_rate', 'num_hidden_nodes', 'weight_range', 'beta', 'c', 'error']
 
     ## make results file
-    with open('logs/' + str(core_id) + '.csv', 'w') as file:
-        writer = csv.writer(file)
+    with open('c_param_models/sigmoid_acts/GridSearch/logs/' + str(core_id) + '.csv', 'w') as file:
+        writer = csv.writer(file, lineterminator = '\n')
         writer.writerow(results_column_names)
 
 
@@ -60,9 +60,11 @@ def run_parallel_grid_search(core_id, hyperparameter_batch):
         error = divaWrap_RespProbMethod_nosofskySuggestion.get_fit(hps[0],hps[1], hps[2], hps[3], hps[4],)
         errors.append(error)
 
+         
+
         ## save results for each dataset averaged across inits
-        with open('logs/' + str(core_id) + '.csv', 'a') as file:
-            writer = csv.writer(file)
+        with open('c_param_models/sigmoid_acts/GridSearch/logs/' + str(core_id) + '.csv', 'a') as file:
+            writer = csv.writer(file,lineterminator = '\n')
             for val in errors:
                 writer.writerow([ 
                     model_settings['learn_rate'], 
