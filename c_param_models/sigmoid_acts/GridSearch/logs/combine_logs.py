@@ -1,10 +1,10 @@
-import os
+import sys, os
 import glob
 import pandas as pd
 import time
 
 #combine all the logs for easier analysis
-os.chdir("c_param_models/sigmoid_acts/GridSearch/logs")
+os.chdir(sys.path[0])
 extension = 'csv'
 all_filenames = [i for i in glob.glob('*.{}'.format(extension))]
 #combine all files in the list

@@ -10,28 +10,30 @@ import divaWrap_RespProbMethod_nosofskySuggestion
 
 
 
-def grid_search(space, population_size = 10):
+def grid_search(space, population_size):
 
 
 
     granularity = population_size // len(space)
+    
 
     param_space = []
     for param in space:
+        
         if space[param]['type'] == 'Real':
             param_space.append(
                 np.linspace(space[param]['range'][0], space[param]['range'][1], granularity)
             )
         elif space[param]['type'] == 'Integer':
-            param_space.append(
-                np.arange(
-                    space[param]['range'][0], space[param]['range'][1], 
-                    (space[param]['range'][1]  - space[param]['range'][0]) // granularity) # <-- step size
-            )
+            if ((space[param]['range'][1]  - space[param]['range'][0])//granularity) == 0:#<-- making sure step size is never zero
+                param_space.append(np.arange(space[param]['range'][0], space[param]['range'][1], 1))
+            else:
+                param_space.append(np.arange(space[param]['range'][0], space[param]['range'][1], (space[param]['range'][1]  - space[param]['range'][0]) // granularity)) # <-- step size
+    print(param_space)
     param_space = list(itertools.product(*param_space))
+    print(len(param_space))
 
     return param_space
-
 
 
 
@@ -41,7 +43,7 @@ def run_parallel_grid_search(core_id, hyperparameter_batch):
     results_column_names = ['learn_rate', 'num_hidden_nodes', 'weight_range', 'beta', 'c', 'error']
 
     ## make results file
-    with open('c_param_models/sigmoid_acts/GridSearch/logs/' + str(core_id) + '.csv', 'w') as file:
+    with open('GridSearch/logs/' + str(core_id) + '.csv', 'w') as file:
         writer = csv.writer(file, lineterminator = '\n')
         writer.writerow(results_column_names)
 
@@ -63,7 +65,7 @@ def run_parallel_grid_search(core_id, hyperparameter_batch):
          
 
         ## save results for each dataset averaged across inits
-        with open('c_param_models/sigmoid_acts/GridSearch/logs/' + str(core_id) + '.csv', 'a') as file:
+        with open('GridSearch/logs/' + str(core_id) + '.csv', 'a') as file:
             writer = csv.writer(file,lineterminator = '\n')
             for val in errors:
                 writer.writerow([ 

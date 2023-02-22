@@ -1,7 +1,7 @@
 import sys, os
 import parallel_grid_search_utils as utils
 import multiprocessing as mp
-
+import time
 
 tested_model = 'diva_shj'
 
@@ -9,31 +9,29 @@ tested_model = 'diva_shj'
 
 space = {
     "learn_rate": {
-        "range": [0.5, 3.0],
+        "range": [2.0, 2.5],
         "type": "Real"
     },
     "num_hidden_nodes": {
-        "range": [2, 15],
+        "range": [8, 12],
         "type": "Integer"
     },
     "weight_range": {
-        "range": [.5, 3.0],
+        "range": [2.0, 2.5],
         "type": "Real"
     },
     "beta": {
-        "range": [0.0, 500.0],
+        "range": [400.0, 500.0],
         "type": "Integer"
     },
     "c": {
-        "range": [0.0, 500.0],
+        "range": [400.0, 500.0],
         "type": "Integer"
-    },
-    
-    
+    },   
 }
 
-num_cores= 2
-hp_grid= utils.grid_search(space=space, population_size=10)
+num_cores= 10
+hp_grid= utils.grid_search(space=space, population_size=25)
 
 ##__Break Grid into batches; send each batch to it's own 'process'
 batch_size = len(hp_grid) // num_cores
@@ -53,6 +51,13 @@ for core in range(num_cores):
     )
 
 if __name__ == '__main__':
+    #set working directory to to root directory
+    print('search Started!')
+    
+ 
+    start = time.time()
+
+
     mp.freeze_support()
 
     ##__Start Processes
@@ -62,4 +67,13 @@ if __name__ == '__main__':
     ##__Wait until they finish
     for process in processes:
         process.join()
+
+
+    
+
+    print('search ended!')
+    print('Hyperparameter search took {0:0.1f} seconds'.format(time.time() - start))
+
+
+
 

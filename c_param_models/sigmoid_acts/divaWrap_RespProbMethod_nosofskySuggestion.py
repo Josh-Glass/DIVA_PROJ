@@ -1,7 +1,9 @@
 ## external requirements
 import numpy as np
 import sys, os
-sys.path.append(os.path.join(sys.path[0],'..\\..'))
+import pandas as pd
+
+
 
 
 
@@ -55,7 +57,7 @@ def get_fit(learn_rate, num_hidden_nodes, weight_range, beta, c):
     # # # # # # # # # #
     fit_err = 0
     num_epochs = 16
-    inits= 1
+    inits= 1000
 
 
 
@@ -296,12 +298,8 @@ def get_fit(learn_rate, num_hidden_nodes, weight_range, beta, c):
 
         inputs = struct[:,:-1]
 
-        for index, x in np.ndenumerate(inputs):
-            if inputs[index]== -1:
-                inputs[index]+= 1
 
         labels = (struct[:,-1] - 1).astype(int)
-            
         behavioral = behavioral_all_structures[0:16,[s]].reshape(16, 1)
 
         targets = inputs / 2 + .5 #not sure why we're dividing by this term here<-- ask about this
@@ -380,6 +378,10 @@ def get_fit(learn_rate, num_hidden_nodes, weight_range, beta, c):
         #take the average across all inits per epoch<--left with array of size 16X1
         accuracy = performance_data.mean(axis = 1).reshape(16, 1)
 
+        df = pd.DataFrame(accuracy)
+        df.to_csv(f'output_{structure}.csv',index= False)
+
+
         
 
         
@@ -393,4 +395,4 @@ def get_fit(learn_rate, num_hidden_nodes, weight_range, beta, c):
 
 
 
-
+print(get_fit(learn_rate=2.0, num_hidden_nodes=8, weight_range=2.375, beta=480, c=460))

@@ -1,7 +1,7 @@
 import time
 start = time.time()
 import divaWrap_RespProbMethod_nosofskySuggestion
-import simutils
+import skopt_simutils
 import matplotlib.pyplot as plt 
 import numpy as np
 
@@ -37,7 +37,7 @@ space = {
 print('Search Started')
 
 objective_func = divaWrap_RespProbMethod_nosofskySuggestion.get_fit
-best_params = simutils.skopt_search(objective_func=objective_func, space=space, iters= 1, inits=1, plot_results=False)
+best_params = skopt_simutils.skopt_search(objective_func=objective_func, space=space, iters= 1, inits=1, plot_results=False)
 
 
 print('Search Complete!')
