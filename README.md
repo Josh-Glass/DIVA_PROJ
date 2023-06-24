@@ -16,7 +16,7 @@ The tradition response function used for DIVA is (1/SSD[A])/((1/SSD[A])+(1/SSD[B
 
 Dr. Nosofsy suggested to use P(A|i)  =    exp(-c*SSD[A]) /  {exp(-c*SSD[A] + exp(-c*SSD[B]}.  This is basically a softmax function, where c is a some scalar.
 
-In the case where (1/SSD[A])/((1/SSD[A])+(1/SSD[B])) = exp(-c*SSD[A]) /  {exp(-c*SSD[A] + exp(-c*SSD[B]}, c=(ln(SSD[A]/SSD[B]))/( SSD[A]  - SSD[B]  )... if I'm doing my algebra right. So, the value of c that would make the two functions equivalent would be different for different values of SSD[A] and SSD[B].
+In the case where (1/SSD[A])/((1/SSD[A])+(1/SSD[B])) = exp(-c*SSD[A]) /  {exp(-c*SSD[A] + exp(-c*SSD[B]}, c=(ln(SSD[A]/SSD[B]))/( SSD[A]  - SSD[B]  )... there is no solution if I'm doing my algebra right. So, this response function completely different than the previous one rather than being a generalized version.
 
 We've been talking about two different methods for determining block accuracy.  One where each item ends with a definite prediction (1 or 0; by taking argmax of the response probabilities), and another where each item's accuracy is equal to the response probability generated for that item. 
 
