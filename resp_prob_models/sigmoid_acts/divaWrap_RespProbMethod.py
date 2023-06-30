@@ -287,9 +287,10 @@ def get_fit(learn_rate, num_hidden_nodes, weight_range, beta):
 
         inputs = struct[:,:-1]
 
-        for index, x in np.ndenumerate(inputs):
-            if inputs[index]== -1:
-                inputs[index]+= 1
+        #for index, x in np.ndenumerate(inputs):
+         #   if inputs[index]== -1:
+          #      inputs[index]+= 1
+        print('inputs\n',inputs)
 
         labels = (struct[:,-1] - 1).astype(int)
             
@@ -371,7 +372,7 @@ def get_fit(learn_rate, num_hidden_nodes, weight_range, beta):
         
         #take the average across all inits per epoch<--left with array of size 16X1
         accuracy = performance_data.mean(axis = 1).reshape(16, 1)
-        print(performance_data)
+        #print(performance_data)
 
         np.mean(accuracy)
         

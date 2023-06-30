@@ -56,7 +56,7 @@ plt.plot(block, human6, c='orange',linestyle='dashed', linewidth=3, alpha=0.4)
 
 
 
-plt.title('DIVA performance on shj (0.146 SSD)')
+plt.title('DIVA performance on shj (about 0.1 SSD)')
 plt.xlabel('learning block')
 plt.ylabel('accuracy')
 plt.legend()

@@ -4,7 +4,8 @@ import pandas as pd
 import time
 
 
-df_hp = pd.read_csv(r'orthTune.csv')
+#df_hp = pd.read_csv(r'orthTune.csv')
+df_hp = pd.read_csv(r'C:/Users/apers\DIVA_proj/resp_prob_models\sigmoid_acts/OrthogonalArray/orthTune.csv')
 
 
 hidden_nodes = df_hp.iloc[0:27, 0]
@@ -72,7 +73,7 @@ def get_fit(learn_rate, num_hidden_nodes, weight_range, beta):
     # # # # # # # # # #
     fit_err = 0
     num_epochs = 16
-    inits= 1000
+    inits= 100
 
 
 
@@ -305,9 +306,7 @@ def get_fit(learn_rate, num_hidden_nodes, weight_range, beta):
 
         inputs = struct[:,:-1]
 
-        for index, x in np.ndenumerate(inputs):
-            if inputs[index]== -1:
-                inputs[index]+= 1
+        
 
         labels = (struct[:,-1] - 1).astype(int)
             
