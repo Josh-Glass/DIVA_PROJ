@@ -57,7 +57,7 @@ def get_fit(learn_rate, num_hidden_nodes, weight_range, beta, c):
     # # # # # # # # # #
     fit_err = 0
     num_epochs = 16
-    inits= 10
+    inits= 100
 
 
 
@@ -380,18 +380,61 @@ def get_fit(learn_rate, num_hidden_nodes, weight_range, beta, c):
         accuracy = performance_data.mean(axis = 1).reshape(16, 1)
 
         
-        #df.insert(s, structure, list(accuracy), True)
         df[structure] = list(accuracy)
         #df.to_csv(f'output_{structure}.csv',index= False)
 
 
         
 
-        print(df)
         fit_errors.append(np.sum( (accuracy - behavioral) ** 2 ))
         fit_err = np.sum(fit_errors)
-    #print(accuracy)
-    print(df)
+    #print(df['shj1'])
+
+    import matplotlib.pyplot as plt
+
+    #store all the human data in a more convenient way for graphing
+    human1 = behavioral_all_structures[0:16,[0]].reshape(16, 1)
+    human2 = behavioral_all_structures[0:16,[1]].reshape(16, 1)
+    human3 = behavioral_all_structures[0:16,[2]].reshape(16, 1)
+    human4 = behavioral_all_structures[0:16,[3]].reshape(16, 1)
+    human5 = behavioral_all_structures[0:16,[4]].reshape(16, 1)
+    human6 = behavioral_all_structures[0:16,[5]].reshape(16, 1)
+
+    #create a list to graph the learning block on x axis
+    block = np.array([1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16])
+
+
+    #plot human and model performance 
+    plt.plot(block, df['shj1'], c='r', marker='s',label='shj1')
+    plt.plot(block, human1, c='r',linestyle='dashed', linewidth=3, alpha=0.4)
+
+    plt.plot(block,df['shj2'], c='b', marker='*',label='shj2')
+    plt.plot(block, human2, c='b',linestyle='dashed', linewidth=3, alpha=0.4)
+
+    plt.plot(block, df['shj3'], c='k', marker='o',label='shj3')
+    plt.plot(block, human3, c='k',linestyle='dashed', linewidth=3, alpha=0.4)
+
+    plt.plot(block, df['shj4'], c='y', marker='^',label='shj4')
+    plt.plot(block, human4, c='y',linestyle='dashed', linewidth=3, alpha=0.4)
+
+    plt.plot(block, df['shj5'], c='g', marker='X',label='shj5')
+    plt.plot(block, human5, c='g',linestyle='dashed', linewidth=3, alpha=0.4)
+
+    plt.plot(block, df['shj6'], c='orange', marker='P',label='shj6')
+    plt.plot(block, human6, c='orange',linestyle='dashed', linewidth=3, alpha=0.4)
+
+
+
+
+
+
+
+    plt.title('DIVA performance on shj SSE=' + str(np.round(fit_err, decimals=3)))
+    plt.xlabel('learning block')
+    plt.ylabel('accuracy')
+    plt.legend()
+    plt.show()
+
         
         
     return fit_err
