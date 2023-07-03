@@ -4,7 +4,8 @@ import pandas as pd
 import time
 
 
-df_hp = pd.read_csv(r'orthTune.csv')
+#df_hp = pd.read_csv(r'orthTune.csv')
+df_hp = pd.read_csv(r'C:/Users/apers\DIVA_proj/resp_prob_models\sigmoid_acts/OrthogonalArray/orthTune.csv')
 
 
 hidden_nodes = df_hp.iloc[0:27, 0]
@@ -72,7 +73,7 @@ def get_fit(learn_rate, num_hidden_nodes, weight_range, beta):
     # # # # # # # # # #
     fit_err = 0
     num_epochs = 16
-    inits= 1000
+    inits= 100
 
 
 
@@ -331,9 +332,9 @@ def get_fit(learn_rate, num_hidden_nodes, weight_range, beta):
         #This second level loop loops through all of the inits for the current shj structure
         for init in range(inits):
             
-            #this array will keep track of accuracy for each epoch within an init
+            #this array will keep track of resp probs for each epoch within an init
             #it can reset after each init, so initalize within init but before epoch loop
-            acc_array = np.zeros([num_epochs, 1])
+            probs_array = np.zeros([num_epochs, 1])
 
             #build new params for each initialization
             params = build_params(
@@ -354,21 +355,26 @@ def get_fit(learn_rate, num_hidden_nodes, weight_range, beta):
                 #shuffle the presentation order at the beginning of each epoch
                 np.random.shuffle(presentation_order)
                 
-                #initialize accuracy list before presentation loop, so that it resets after each epoch
-                acc_score_per_epoch =[]
+                #initialize resp probs list before presentation loop, so that it resets after each epoch
+                probs_per_epoch =[]
                 #This fourth level loop loops through each item in a epoch/block
                 for p in presentation_order:
                     
 
 
-                   ## Step 1: Record Model Response
-                    pred = predict(params = params, inputs = inputs[p,:], categories = categories, targets = targets[p,:])
-                    if pred == labels[p]:
-                        acc_score_per_item = 1
+                    ## Step 1: Record Model Response
+                    resp = response(params= params, inputs = inputs[p,:], channels = categories, targets = targets[p,:], beta = beta)
+                    
+                    #check to see if the 'winning' resp prob is the correct one
+                    if np.argmax(resp, axis=0) == labels[p]:
+                        #in the case that the correct item has the highest, take the value of that prob
+                        prob_per_item = np.amax(resp)
                     else:
-                        acc_score_per_item = 0
+                        #in the case where an incorrect item has the highest prob, take the prob of the correct item
+                        prob_per_item = np.amin(resp)
 
-                    acc_score_per_epoch.append(acc_score_per_item)
+
+                    probs_per_epoch.append(prob_per_item)
             
 
 
@@ -376,9 +382,9 @@ def get_fit(learn_rate, num_hidden_nodes, weight_range, beta):
                     gradients = loss_grad(params, inputs[p,:], labels[p], targets = targets[p,:])
                     params = update_params(params, gradients, learn_rate)
                 #add the average resp prob of correct items for the current epoch 
-                acc_array[e] = np.mean(acc_score_per_epoch)
+                probs_array[e] = np.mean(probs_per_epoch)
                 #store epoch by init resp prob data 
-                performance_data[e,init] = acc_array[e]
+                performance_data[e,init] = probs_array[e]
         
         #take the average across all inits per epoch<--left with array of size 16X1
         accuracy = performance_data.mean(axis = 1).reshape(16, 1)
@@ -406,7 +412,7 @@ for i in lr.index:
 
 df_evaluations = pd.DataFrame({'error_val': evaluations})
 savetime = time.strftime("%m%d-%H%M")
-df_evaluations.to_csv(f'orthoganalArray_Rseults_ItemPredsMethod-{savetime}.csv')
+df_evaluations.to_csv(f'orthoganalArray_Rseults_RespProbMethod-{savetime}.csv')
 
 print('ended:')
 print(time.strftime("%m%d-%H%M"))

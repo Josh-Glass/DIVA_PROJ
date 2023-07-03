@@ -20,7 +20,10 @@ beta = df_hp.iloc[0:27, 3]
 beta = beta.astype(int)
 
 
-
+'''weight_range_int = []
+for i in weight_range:
+    int(i)
+    weight_range_int.append(i)'''
 
 def sigmoid(x):
     return 1 / (1 + np.exp(-x))
@@ -35,14 +38,16 @@ def linear(x):
 def relu(x):
     return x * (x > 0)
 
-def get_formatted_targets(inputs, labels):
+'''# we don't want to use formatted targets -- that is for a diva mod
+# you may want to check your other sim scripts
+#def get_formatted_targets(inputs, labels):
     targets = np.zeros([inputs.shape[0], inputs.shape[1]*2])   # np.full makes 8 by 6 array and fills it with target value
     for i in range(inputs.shape[0]):
         if labels[i] == 0:
             targets[i,:3] = inputs[i,:]
         elif labels[i] == 1:
             targets[i,3:] = inputs[i,:]
-    return targets
+    return targets'''
 
 data = {
     'shj1': np.genfromtxt('data/shj/shj1.csv', delimiter = ','),
@@ -58,12 +63,6 @@ behavioral_all_structures = 1 - np.genfromtxt('data/shj/behavioral_nosofsky1994.
 behavioral = behavioral_all_structures[0:16,0]
 
 
-
-
-
-
-
-
 def get_fit(learn_rate, num_hidden_nodes, weight_range, beta):
     # # # # # # # # # # 
     # 
@@ -72,11 +71,6 @@ def get_fit(learn_rate, num_hidden_nodes, weight_range, beta):
     # # # # # # # # # #
     fit_err = 0
     num_epochs = 16
-    inits= 1000
-
-
-
-
 
     ## "forward pass"
     def forward(params, inputs, channel):
@@ -114,8 +108,6 @@ def get_fit(learn_rate, num_hidden_nodes, weight_range, beta):
                 )
             )
         ) / inputs.shape[0]
-
-
 
 
     ## backprop (for sum squared error cost function)
@@ -175,10 +167,8 @@ def get_fit(learn_rate, num_hidden_nodes, weight_range, beta):
             }
         }
 
-
-
     ## luce choice w/ late-stage attention
-    def response(params, inputs, channels, targets = None, beta = beta):
+    def response(params, inputs, channels, targets = None, beta = 0):
         if np.any(targets) == None: targets = inputs
 
         activations = np.array([
@@ -252,28 +242,6 @@ def get_fit(learn_rate, num_hidden_nodes, weight_range, beta):
         )
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     ####################################
     ####################################
     #########   RUN  THE MODEL #########
@@ -281,114 +249,79 @@ def get_fit(learn_rate, num_hidden_nodes, weight_range, beta):
     ####################################
 
 
-
-
-
-
-
-
-    # This is the outer most loop, it loops through all the different shj types
-    #initalize fit errors list outside of the loop so that it DOES NOT reset after going through each shj type
-    fit_errors = []
     for s, structure in enumerate(data):
 
         struct = data[structure]
         idx1 = np.arange(struct.shape[0])
         idx2 = np.arange(struct.shape[0])
-
-        #Just shuffling the data
         np.random.shuffle(idx1)
         np.random.shuffle(idx2)
         first8 = struct[idx1]
         second8 = struct[idx2]
+
+
         struct = np.concatenate((first8, second8), axis = 0)
 
         inputs = struct[:,:-1]
 
-        
+        for index, x in np.ndenumerate(inputs):
+                if inputs[index]== -1:
+                    inputs[index]+= 1
+
 
         labels = (struct[:,-1] - 1).astype(int)
-            
+        
         behavioral = behavioral_all_structures[0:16,[s]].reshape(16, 1)
 
-        targets = inputs / 2 + .5 #not sure why we're dividing by this term here<-- ask about this
+        targets = inputs / 2 + .5
+
 
         categories = np.unique(labels)
-    
-
-        #make an array to hold the performance data
-        #want the array to hold the data for one shj type at a time, retaining data across all inits
-        #so initalize before the init loop, so it only resets when the shj type changes
-        performance_data = np.zeros([num_epochs, inits])
-
-        
-        #create a presentation order
-        presentation_order = np.arange(inputs.shape[0])
-
+        idx_map = {category: idx for category, idx in zip(categories, range(len(categories)))}
+        labels_indexed = [idx_map[label] for label in labels]
         
 
-        
-        #This second level loop loops through all of the inits for the current shj structure
-        for init in range(inits):
-            
-            #this array will keep track of accuracy for each epoch within an init
-            #it can reset after each init, so initalize within init but before epoch loop
-            acc_array = np.zeros([num_epochs, 1])
-
-            #build new params for each initialization
-            params = build_params(
+        params = build_params(
             num_features= inputs.shape[1],
             num_hidden_nodes=num_hidden_nodes, 
             categories=categories, 
             weight_range_low=-weight_range,
             weight_range_high=weight_range)
+
+
+        results_prob = np.zeros([num_epochs, inputs.shape[0]])
+
+        acc_array = np.zeros([num_epochs, 1])
+        results_guess = np.zeros([num_epochs, inputs.shape[0]])
+        presentation_order = np.arange(inputs.shape[0])
+        
+
+
+        for e in range(num_epochs): 
             
-
-
-
-
-
-            #This third level loop loops through all of the epochs (training blocks)
-            for e in range(num_epochs): 
-                
-                #shuffle the presentation order at the beginning of each epoch
-                np.random.shuffle(presentation_order)
-                
-                #initialize accuracy list before presentation loop, so that it resets after each epoch
-                acc_score_per_epoch =[]
-                #This fourth level loop loops through each item in a epoch/block
-                for p in presentation_order:
-                    
-
-
-                   ## Step 1: Record Model Response
-                    pred = predict(params = params, inputs = inputs[p,:], categories = categories, targets = targets[p,:])
-                    if pred == labels[p]:
-                        acc_score_per_item = 1
-                    else:
-                        acc_score_per_item = 0
-
-                    acc_score_per_epoch.append(acc_score_per_item)
+            np.random.shuffle(presentation_order)
             
+            acc_score_per_epoch =[]
+            for p in presentation_order:
+                
+                ## Step 1: Record Model Response
+                pred = predict(params = params, inputs = inputs[p,:], categories = categories, targets = targets[p,:])
+                if pred == labels[p]:
+                    acc_score_per_item = 1
+                else:
+                    acc_score_per_item = 0
 
+                acc_score_per_epoch.append(acc_score_per_item)
+                
 
-                    ## Step 2: Update Model Weights
-                    gradients = loss_grad(params, inputs[p,:], labels[p], targets = targets[p,:])
-                    params = update_params(params, gradients, learn_rate)
-                #add the average resp prob of correct items for the current epoch 
-                acc_array[e] = np.mean(acc_score_per_epoch)
-                #store epoch by init resp prob data 
-                performance_data[e,init] = acc_array[e]
-        
-        #take the average across all inits per epoch<--left with array of size 16X1
-        accuracy = performance_data.mean(axis = 1).reshape(16, 1)
-        
-
-        
-        fit_errors.append(np.sum( (accuracy - behavioral) ** 2 ))
-        fit_err = np.sum(fit_errors)
-
-        
+                ## Step 2: Update Model Weights
+                gradients = loss_grad(params, inputs[p,:], labels[p], targets = targets[p,:])
+                params = update_params(params, gradients, learn_rate)
+            
+            acc_array[e] = np.mean(acc_score_per_epoch) 
+            
+        print(structure)
+        fit_err += np.sum( (acc_array - behavioral) ** 2 )
         
     return fit_err
 
@@ -396,17 +329,20 @@ def get_fit(learn_rate, num_hidden_nodes, weight_range, beta):
 print('started:')
 print(time.strftime("%m%d-%H%M"))
 
-
+num_runs = 1
 evaluations = []
 
 for i in lr.index:
-    val =get_fit(learn_rate=lr[i], num_hidden_nodes=hidden_nodes[i], weight_range=weight_range[i], beta=beta[i])
+    eval_per_run = []
+    for runs in range(num_runs):
+        val =get_fit(learn_rate=lr[i], num_hidden_nodes=hidden_nodes[i], weight_range=weight_range[i], beta=beta[i])
+        eval_per_run.append(val)
     
-    evaluations.append(val)
+    evaluations.append(np.mean(eval_per_run))
+
 
 df_evaluations = pd.DataFrame({'error_val': evaluations})
-savetime = time.strftime("%m%d-%H%M")
-df_evaluations.to_csv(f'orthoganalArray_Rseults_ItemPredsMethod-{savetime}.csv')
+#df_evaluations.to_csv('orthTune_data.csv')
 
 print('ended:')
 print(time.strftime("%m%d-%H%M"))

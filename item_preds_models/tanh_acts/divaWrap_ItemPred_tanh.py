@@ -1,23 +1,5 @@
 ## external requirements
 import numpy as np
-import pandas as pd
-import time
-
-
-df_hp = pd.read_csv(r'orthTune.csv')
-
-
-hidden_nodes = df_hp.iloc[0:27, 0]
-
-hidden_nodes = hidden_nodes.astype(int)
-lr = df_hp.iloc[0:27, 1]
-#lr = df_hp['lr']
-weight_range = df_hp.iloc[0:27, 2]
-#weight_range = df_hp['wr']
-weight_range = weight_range.astype(int)
-beta = df_hp.iloc[0:27, 3]
-#beta = df_hp['beta']
-beta = beta.astype(int)
 
 
 
@@ -72,7 +54,7 @@ def get_fit(learn_rate, num_hidden_nodes, weight_range, beta):
     # # # # # # # # # #
     fit_err = 0
     num_epochs = 16
-    inits= 1000
+    inits= 100
 
 
 
@@ -256,24 +238,6 @@ def get_fit(learn_rate, num_hidden_nodes, weight_range, beta):
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     ####################################
     ####################################
     #########   RUN  THE MODEL #########
@@ -304,7 +268,6 @@ def get_fit(learn_rate, num_hidden_nodes, weight_range, beta):
         struct = np.concatenate((first8, second8), axis = 0)
 
         inputs = struct[:,:-1]
-
         
 
         labels = (struct[:,-1] - 1).astype(int)
@@ -393,20 +356,8 @@ def get_fit(learn_rate, num_hidden_nodes, weight_range, beta):
     return fit_err
 
 
-print('started:')
-print(time.strftime("%m%d-%H%M"))
 
 
-evaluations = []
 
-for i in lr.index:
-    val =get_fit(learn_rate=lr[i], num_hidden_nodes=hidden_nodes[i], weight_range=weight_range[i], beta=beta[i])
-    
-    evaluations.append(val)
+print(get_fit(learn_rate=2.0, num_hidden_nodes=8, weight_range=2.37, beta=450))
 
-df_evaluations = pd.DataFrame({'error_val': evaluations})
-savetime = time.strftime("%m%d-%H%M")
-df_evaluations.to_csv(f'orthoganalArray_Rseults_ItemPredsMethod-{savetime}.csv')
-
-print('ended:')
-print(time.strftime("%m%d-%H%M"))

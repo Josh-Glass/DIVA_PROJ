@@ -252,70 +252,79 @@ def get_fit(learn_rate, num_hidden_nodes, weight_range, beta):
 
 
     # This is the outer most loop, it loops through all the different shj types
+    #initalize fit errors list outside of the loop so that it DOES NOT reset after going through each shj type
     fit_errors = []
     for s, structure in enumerate(data):
 
         struct = data[structure]
         idx1 = np.arange(struct.shape[0])
         idx2 = np.arange(struct.shape[0])
+
         #Just shuffling the data
         np.random.shuffle(idx1)
         np.random.shuffle(idx2)
         first8 = struct[idx1]
         second8 = struct[idx2]
-
-
         struct = np.concatenate((first8, second8), axis = 0)
 
         inputs = struct[:,:-1]
-
-        for index, x in np.ndenumerate(inputs):
-                if inputs[index]== -1:
-                    inputs[index]+= 1
-
+        
 
         labels = (struct[:,-1] - 1).astype(int)
-        
+            
         behavioral = behavioral_all_structures[0:16,[s]].reshape(16, 1)
 
-        targets = inputs / 2 + .5
-
+        targets = inputs / 2 + .5 #not sure why we're dividing by this term here<-- ask about this
 
         categories = np.unique(labels)
-        idx_map = {category: idx for category, idx in zip(categories, range(len(categories)))}
-        labels_indexed = [idx_map[label] for label in labels]
+    
+
+        #make an array to hold the performance data
+        #want the array to hold the data for one shj type at a time, retaining data across all inits
+        #so initalize before the init loop, so it only resets when the shj type changes
+        performance_data = np.zeros([num_epochs, inits])
+
+        
+        #create a presentation order
+        presentation_order = np.arange(inputs.shape[0])
+
         
 
-        params = build_params(
+        
+        #This second level loop loops through all of the inits for the current shj structure
+        for init in range(inits):
+            
+            #this array will keep track of accuracy for each epoch within an init
+            #it can reset after each init, so initalize within init but before epoch loop
+            acc_array = np.zeros([num_epochs, 1])
+
+            #build new params for each initialization
+            params = build_params(
             num_features= inputs.shape[1],
             num_hidden_nodes=num_hidden_nodes, 
             categories=categories, 
             weight_range_low=-weight_range,
             weight_range_high=weight_range)
+            
 
 
-        
 
-        acc_array = np.zeros([num_epochs, 1])
-        performance_data = np.zeros([num_epochs, inits])
 
-        presentation_order = np.arange(inputs.shape[0])
-        
-        #This second level loop loops through all of the inits for the current shj structure
-        for init in range(inits):
 
             #This third level loop loops through all of the epochs (training blocks)
             for e in range(num_epochs): 
                 
+                #shuffle the presentation order at the beginning of each epoch
                 np.random.shuffle(presentation_order)
                 
+                #initialize accuracy list before presentation loop, so that it resets after each epoch
                 acc_score_per_epoch =[]
                 #This fourth level loop loops through each item in a epoch/block
                 for p in presentation_order:
                     
 
 
-                    ## Step 1: Record Model Response
+                   ## Step 1: Record Model Response
                     pred = predict(params = params, inputs = inputs[p,:], categories = categories, targets = targets[p,:])
                     if pred == labels[p]:
                         acc_score_per_item = 1
@@ -329,10 +338,14 @@ def get_fit(learn_rate, num_hidden_nodes, weight_range, beta):
                     ## Step 2: Update Model Weights
                     gradients = loss_grad(params, inputs[p,:], labels[p], targets = targets[p,:])
                     params = update_params(params, gradients, learn_rate)
-                
-                #add the accuracy of the most recent epoch to an array according to epoch number and init number
-                performance_data[e,init] = np.mean(acc_score_per_epoch)
+                #add the average resp prob of correct items for the current epoch 
+                acc_array[e] = np.mean(acc_score_per_epoch)
+                #store epoch by init resp prob data 
+                performance_data[e,init] = acc_array[e]
+        
+        #take the average across all inits per epoch<--left with array of size 16X1
         accuracy = performance_data.mean(axis = 1).reshape(16, 1)
+        
 
         
         fit_errors.append(np.sum( (accuracy - behavioral) ** 2 ))
@@ -346,5 +359,5 @@ def get_fit(learn_rate, num_hidden_nodes, weight_range, beta):
 
 
 
-print(get_fit(learn_rate=0.1, num_hidden_nodes=4, weight_range=1, beta=0.05))
+print(get_fit(learn_rate=2.0, num_hidden_nodes=8, weight_range=2.37, beta=450))
 
