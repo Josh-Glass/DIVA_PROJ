@@ -107,7 +107,7 @@ def skopt_search(objective_func, space, run = 1, iters = 1, inits = 1, plot_resu
     from skopt import gp_minimize
     import sys, os
     sys.path.append(os.path.join(sys.path[0],'skopt'))
-    from skopt import skoptSearch as sks
+    import skoptSearch as sks
 
 
 

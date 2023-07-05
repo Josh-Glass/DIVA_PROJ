@@ -1,32 +1,32 @@
 import time
 start = time.time()
-import divaWrap_RespProbMethod_nosofskySuggestion
+import revised_cparam_sigmoid
 import skopt_simutils
 import matplotlib.pyplot as plt 
 import numpy as np
 
 
-tested_model = 'diva_shj'
+tested_model = 'Revisedcparam'
 
 space = {
     "learn_rate": {
-        "range": [0.5, 3.0],
+        "range": [0.5, 1.5],
         "type": "Real"
     },
     "num_hidden_nodes": {
-        "range": [2, 15],
+        "range": [5, 12],
         "type": "Integer"
     },
     "weight_range": {
-        "range": [.5, 3.0],
+        "range": [2.0, 3.0],
         "type": "Real"
     },
     "beta": {
-        "range": [0.0, 500.0],
+        "range": [250.0, 450.0],
         "type": "Integer"
     },
     "c": {
-        "range": [0.0, 500.0],
+        "range": [350.0, 450.0],
         "type": "Integer"
     },
     
@@ -36,8 +36,8 @@ space = {
 
 print('Search Started')
 
-objective_func = divaWrap_RespProbMethod_nosofskySuggestion.get_fit
-best_params = skopt_simutils.skopt_search(objective_func=objective_func, space=space, iters= 1, inits=1, plot_results=False)
+objective_func = revised_cparam_sigmoid.get_fit
+best_params = skopt_simutils.skopt_search(objective_func=objective_func, space=space, iters= 100, inits=100, plot_results=False)
 
 
 print('Search Complete!')

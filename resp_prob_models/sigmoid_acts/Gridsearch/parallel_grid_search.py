@@ -23,15 +23,11 @@ space = {
     "beta": {
         "range": [400.0, 500.0],
         "type": "Integer"
-    },
-    "c": {
-        "range": [400.0, 500.0],
-        "type": "Integer"
-    },   
+    },  
 }
 
-num_cores= 10
-hp_grid= utils.grid_search(space=space, population_size=25)
+num_cores= 3
+hp_grid= utils.grid_search(space=space, population_size=8)
 
 ##__Break Grid into batches; send each batch to it's own 'process'
 batch_size = len(hp_grid) // num_cores

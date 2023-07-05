@@ -18,8 +18,16 @@ def sigmoid_deriv(x):
 def linear(x):
     return x
 
-def relu(x):
-    return x * (x > 0)
+def linear_derivative(x):
+    return 1
+
+
+def tanh(x):
+    return (np.exp(x) - np.exp(-x)) / (np.exp(x) + np.exp(-x))
+
+
+def tanh_deriv(x): 
+    return 1 - (np.exp(x) - np.exp(-x)) ** 2 / (np.exp(x) + np.exp(-x))**2
 
 def get_formatted_targets(inputs, labels):
     targets = np.zeros([inputs.shape[0], inputs.shape[1]*2])   # np.full makes 8 by 6 array and fills it with target value
@@ -32,11 +40,11 @@ def get_formatted_targets(inputs, labels):
 
 data = {
     'shj1': np.genfromtxt('data/shj/shj1.csv', delimiter = ','),
-    'shj2': np.genfromtxt('data/shj/shj2.csv', delimiter = ','),
-    'shj3': np.genfromtxt('data/shj/shj3.csv', delimiter = ','),
-    'shj4': np.genfromtxt('data/shj/shj4.csv', delimiter = ','),
-    'shj5': np.genfromtxt('data/shj/shj5.csv', delimiter = ','),
-    'shj6': np.genfromtxt('data/shj/shj6.csv', delimiter = ','),
+    #'shj2': np.genfromtxt('data/shj/shj2.csv', delimiter = ','),
+    #'shj3': np.genfromtxt('data/shj/shj3.csv', delimiter = ','),
+    #'shj4': np.genfromtxt('data/shj/shj4.csv', delimiter = ','),
+    #'shj5': np.genfromtxt('data/shj/shj5.csv', delimiter = ','),
+    #'shj6': np.genfromtxt('data/shj/shj6.csv', delimiter = ','),
 }
 
 
@@ -57,7 +65,7 @@ def get_fit(learn_rate, num_hidden_nodes, weight_range, beta, c):
     # # # # # # # # # #
     fit_err = 0
     num_epochs = 16
-    inits= 10
+    inits= 1
 
 
 
@@ -73,7 +81,8 @@ def get_fit(learn_rate, num_hidden_nodes, weight_range, beta, c):
             params['input']['hidden']['bias']
         )
 
-        hidden_act = sigmoid(hidden_act_raw)
+
+        hidden_act = tanh(hidden_act_raw)
 
         output_act_raw = np.add(
             np.matmul(
@@ -83,8 +92,8 @@ def get_fit(learn_rate, num_hidden_nodes, weight_range, beta, c):
             params['hidden'][channel]['bias'],
         )
 
-        output_act = sigmoid(output_act_raw)
-
+        output_act = tanh(output_act_raw)
+        
         return [hidden_act_raw, hidden_act, output_act_raw, output_act]
 
 
@@ -112,7 +121,7 @@ def get_fit(learn_rate, num_hidden_nodes, weight_range, beta, c):
 
         ## gradients for decode layer ( chain rule on cost function )
         decode_grad = np.multiply(
-            sigmoid_deriv(output_act_raw),
+            tanh_deriv(output_act_raw),
             (2 * (output_act - targets))  / inputs.shape[0] # <-- deriv of cost function
         )
 
@@ -129,7 +138,7 @@ def get_fit(learn_rate, num_hidden_nodes, weight_range, beta, c):
 
         ## gradients for encode layer ( chain rule on hidden layer )
         encode_grad = np.multiply(
-            sigmoid_deriv(hidden_act_raw),
+            tanh_deriv(hidden_act_raw),
             np.matmul(
                 decode_grad, 
                 params['hidden'][channel]['weights'].T
@@ -197,8 +206,13 @@ def get_fit(learn_rate, num_hidden_nodes, weight_range, beta, c):
         #this is the response rule that nosofsky suggested
         #as c gets larger the output is more "confident" that the channel with the lower sse is more likely
         #as c gets smaller the output is less "confident" that the channel with the lower sse is more likely
+
+        print('---',((diversities)),'---')
+        
+
         probs= (np.exp(-c*channel_errors)) / np.sum(np.exp(-c*channel_errors), axis = 0, keepdims = True)
 
+     
         return probs # this is the normal response rule<--(1 / channel_errors) / np.sum(1 / channel_errors, axis = 0, keepdims = True)
 
 
@@ -399,4 +413,4 @@ def get_fit(learn_rate, num_hidden_nodes, weight_range, beta, c):
 
 
 
-print(get_fit(learn_rate=2.0, num_hidden_nodes=8, weight_range=2.375, beta=480, c=460))
+print(get_fit(learn_rate=2.0, num_hidden_nodes=8, weight_range=2.375, beta=300, c=460))

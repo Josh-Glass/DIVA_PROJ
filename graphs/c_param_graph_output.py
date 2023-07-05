@@ -57,7 +57,7 @@ def get_fit(learn_rate, num_hidden_nodes, weight_range, beta, c):
     # # # # # # # # # #
     fit_err = 0
     num_epochs = 16
-    inits= 100
+    inits= 1000
 
 
 
@@ -404,35 +404,97 @@ def get_fit(learn_rate, num_hidden_nodes, weight_range, beta, c):
     block = np.array([1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16])
 
 
-    #plot human and model performance 
-    plt.plot(block, df['shj1'], c='r', marker='s',label='shj1')
-    plt.plot(block, human1, c='r',linestyle='dashed', linewidth=3, alpha=0.4)
+    fig, axs = plt.subplots(nrows=3,ncols=3, sharex=True, sharey=True)
+    #plot human and model performance separately 
+    axs[0,1].plot(block, df['shj1'], c='r', marker='s', markersize= 4, linewidth=2,label='shj1')
+    axs[2,1].plot(block, human1, c='r',linestyle='dashed', linewidth=3, alpha=0.6)
 
-    plt.plot(block,df['shj2'], c='b', marker='*',label='shj2')
-    plt.plot(block, human2, c='b',linestyle='dashed', linewidth=3, alpha=0.4)
+    axs[0,1].plot(block,df['shj2'], c='b', marker='*',markersize= 4, linewidth=2,label='shj2')
+    axs[2,1].plot(block, human2, c='b',linestyle='dashed', linewidth=3, alpha=0.6)
 
-    plt.plot(block, df['shj3'], c='k', marker='o',label='shj3')
-    plt.plot(block, human3, c='k',linestyle='dashed', linewidth=3, alpha=0.4)
+    axs[0,1].plot(block, df['shj3'], c='k', marker='o',markersize= 4, linewidth=2,label='shj3')
+    axs[2,1].plot(block, human3, c='k',linestyle='dashed', linewidth=3, alpha=0.8)
 
-    plt.plot(block, df['shj4'], c='y', marker='^',label='shj4')
-    plt.plot(block, human4, c='y',linestyle='dashed', linewidth=3, alpha=0.4)
+    axs[0,1].plot(block, df['shj4'], c='y', marker='^',markersize= 4, linewidth=2,label='shj4')
+    axs[2,1].plot(block, human4, c='y',linestyle='dashed', linewidth=3, alpha=0.6)
 
-    plt.plot(block, df['shj5'], c='g', marker='X',label='shj5')
-    plt.plot(block, human5, c='g',linestyle='dashed', linewidth=3, alpha=0.4)
+    axs[0,1].plot(block, df['shj5'], c='g', marker='X',markersize= 4, linewidth=2,label='shj5')
+    axs[2,1].plot(block, human5, c='g',linestyle='dashed', linewidth=3, alpha=0.6)
 
-    plt.plot(block, df['shj6'], c='orange', marker='P',label='shj6')
-    plt.plot(block, human6, c='orange',linestyle='dashed', linewidth=3, alpha=0.4)
+    axs[0,1].plot(block, df['shj6'], c='orange', marker='P',markersize= 4, linewidth=2,label='shj6')
+    axs[2,1].plot(block, human6, c='orange',linestyle='dashed', linewidth=3, alpha=0.6)
 
-
-
-
-
+    axs[2,1].set(title= 'Human Performance')
 
 
-    plt.title('DIVA performance on shj SSE=' + str(np.round(fit_err, decimals=3)))
-    plt.xlabel('learning block')
-    plt.ylabel('accuracy')
-    plt.legend()
+    #turn off middle axes
+    axs[1,1].axis('off')
+
+    #plot each shj type separately 
+    #sh1
+    axs[0,0].plot(block, df['shj1'], c='r',markersize= 4, linewidth=2, marker='s')
+    axs[0,0].plot(block, human1, c='r',linestyle='dashed', linewidth=3, alpha=0.6)
+
+    #sh2
+    axs[1,0].plot(block,df['shj2'], c='b',markersize= 4, linewidth=2, marker='*')
+    axs[1,0].plot(block, human2, c='b',linestyle='dashed', linewidth=3, alpha=0.6)
+
+    #shj3
+    axs[2,0].plot(block, df['shj3'], c='k',markersize= 4, linewidth=2, marker='o')
+    axs[2,0].plot(block, human3, c='k',linestyle='dashed', linewidth=3, alpha=0.6)
+    
+    #shj4
+    axs[0,2].plot(block, df['shj4'], c='y',markersize= 4, linewidth=2, marker='^')
+    axs[0,2].plot(block, human4, c='y',linestyle='dashed', linewidth=3, alpha=0.6)
+
+    #shj5
+    axs[1,2].plot(block, df['shj5'], c='g',markersize= 4, linewidth=2, marker='X')
+    axs[1,2].plot(block, human5, c='g',linestyle='dashed', linewidth=3, alpha=0.6)
+
+    #shj6
+    axs[2,2].plot(block, df['shj6'], c='orange',markersize= 4, linewidth=2, marker='P')
+    axs[2,2].plot(block, human6, c='orange',linestyle='dashed', linewidth=3, alpha=0.6)
+
+
+
+    #plot human and model performance together
+    fig2, ax = plt.subplots(1,1)
+    ax.plot(block, df['shj1'], c='r', marker='s',label='shj1')
+    ax.plot(block, human1, c='r',linestyle='dashed', linewidth=3, alpha=0.4)
+
+    ax.plot(block,df['shj2'], c='b', marker='*',label='shj2')
+    ax.plot(block, human2, c='b',linestyle='dashed', linewidth=3, alpha=0.4)
+
+    ax.plot(block, df['shj3'], c='k', marker='o',label='shj3')
+    ax.plot(block, human3, c='k',linestyle='dashed', linewidth=3, alpha=0.4)
+
+    ax.plot(block, df['shj4'], c='y', marker='^',label='shj4')
+    ax.plot(block, human4, c='y',linestyle='dashed', linewidth=3, alpha=0.4)
+
+    ax.plot(block, df['shj5'], c='g', marker='X',label='shj5')
+    ax.plot(block, human5, c='g',linestyle='dashed', linewidth=3, alpha=0.4)
+
+    ax.plot(block, df['shj6'], c='orange', marker='P',label='shj6')
+    ax.plot(block, human6, c='orange',linestyle='dashed', linewidth=3, alpha=0.4)
+
+    
+
+    
+
+
+
+    
+    axs[1,0].set( ylabel=('Accuracy'))
+    axs[2,1].set( xlabel='Learning Block')
+    ax.set( ylabel=('Accuracy'))
+    ax.set( xlabel='Learning Block')
+    
+
+    fig.suptitle('DIVA Performance on SHJ SSE=' + str(np.round(fit_err, decimals=3)))
+    fig2.suptitle('DIVA Performance on SHJ SSE=' + str(np.round(fit_err, decimals=3)))
+    
+    
+    fig.legend()
     plt.show()
 
         
@@ -442,4 +504,5 @@ def get_fit(learn_rate, num_hidden_nodes, weight_range, beta, c):
 
 
 
-print(get_fit(learn_rate=2.0, num_hidden_nodes=8, weight_range=2.375, beta=480, c=460))
+print(get_fit(learn_rate=2, num_hidden_nodes=8, weight_range=2.375, beta=480, c=460))
+

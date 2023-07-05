@@ -3,9 +3,10 @@ import numpy as np
 import itertools
 import sys, os
 import pandas as pd
-sys.path.append(os.path.join(sys.path[0],'..'))
+import time
+#sys.path.append(os.path.join(sys.path[0],'..'))
 
-import divaWrap_RespProbMethod_nosofskySuggestion  
+import divaWrap_RespProb_sigmoid  
 
 
 
@@ -29,9 +30,10 @@ def grid_search(space, population_size):
                 param_space.append(np.arange(space[param]['range'][0], space[param]['range'][1], 1))
             else:
                 param_space.append(np.arange(space[param]['range'][0], space[param]['range'][1], (space[param]['range'][1]  - space[param]['range'][0]) // granularity)) # <-- step size
-    print(param_space)
+    
     param_space = list(itertools.product(*param_space))
-    print(len(param_space))
+    #print(len(param_space))
+    #print(param_space)
 
     return param_space
 
@@ -40,32 +42,37 @@ def grid_search(space, population_size):
 
 def run_parallel_grid_search(core_id, hyperparameter_batch):
 
-    results_column_names = ['learn_rate', 'num_hidden_nodes', 'weight_range', 'beta', 'c', 'error']
+    timestr = time.strftime("%m%d-%H%M")
+    results_column_names = ['learn_rate', 'num_hidden_nodes', 'weight_range', 'beta', 'error']
+    
 
     ## make results file
-    with open('GridSearch/logs/' + str(core_id) + '.csv', 'w') as file:
+    with open('logs/' + str(core_id) +'GS' + 'respProb.csv', 'w') as file:
         writer = csv.writer(file, lineterminator = '\n')
         writer.writerow(results_column_names)
-
+    
 
     ## iterate through HP combos
+
     for hps in hyperparameter_batch:
+        
+
         model_settings = {
             'learn_rate': hps[0],
             'num_hidden_nodes': hps[1],
             'weight_range': hps[2],
             'beta': hps[3],
-            'c': hps[4],
         }
-
+        
         errors = []
-        error = divaWrap_RespProbMethod_nosofskySuggestion.get_fit(hps[0],hps[1], hps[2], hps[3], hps[4],)
+        error = divaWrap_RespProb_sigmoid.get_fit(hps[0],hps[1], hps[2], hps[3],)
         errors.append(error)
+        print(errors,'made it here too')
 
          
-
+       
         ## save results for each dataset averaged across inits
-        with open('GridSearch/logs/' + str(core_id) + '.csv', 'a') as file:
+        with open('logs/' + str(core_id) +'GS' + 'respProb.csv', 'a') as file:
             writer = csv.writer(file,lineterminator = '\n')
             for val in errors:
                 writer.writerow([ 
@@ -73,6 +80,5 @@ def run_parallel_grid_search(core_id, hyperparameter_batch):
                     model_settings['num_hidden_nodes'], 
                     model_settings['weight_range'], 
                     model_settings['beta'], 
-                    model_settings['c'],
                     val,
                 ])
